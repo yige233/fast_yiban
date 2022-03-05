@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+</head>
+
+<body>
+    <h1 style="text-align: center;">加载中...</h1>
+</body>
+<script>
+    (() => {
+        let js = document.createElement("script");
+        js.src = "/js/index.html.js";
+        js.onerror = () => {
+            alert("与服务器的连接似乎出了问题，请刷新或联系管理员！");
+        };
+        js.onload = () => {
+            app.init();
+        };
+        document.head.append(js);
+    })();
+</script>
+
+</html>

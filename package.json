@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "crypto-js": "^4.1.1",
+    "express": "^4.17.1",
+    "http-proxy-middleware": "^2.0.3",
+    "jsencrypt": "^3.2.1",
+    "node-fetch": "^3.0.0"
+  },
+  "name": "autoyiban",
+  "version": "1.0.0",
+  "description": "易班打卡服务",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "易班",
+    "打卡"
+  ],
+  "author": "yige233",
+  "type": "module",
+  "license": "MIT"
+}

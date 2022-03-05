@@ -1,0 +1,106 @@
+body {
+    min-width: 600px;
+    width: 95%;
+    height: 90%;
+}
+
+.container {
+    position: relative;
+    width: 96%;
+    left: 4%;
+}
+
+.description {
+    float: left;
+    clear: left;
+    position: sticky;
+    background-color: white;
+    width: 30%;
+    word-wrap: break-word;
+    top: 10px;
+    bottom: 24px;
+    z-index: 999;
+}
+
+#desc {
+    position: relative;
+    width: 90%;
+    float: left;
+    text-indent: 1em;
+}
+
+.dynamic-info {
+    position: relative;
+    width: 90%;
+    float: left;
+    top: 10px
+}
+
+#result {
+    position: relative;
+    width: 90%;
+    float: left;
+    top: 20px
+}
+
+h3,
+#formname {
+    text-align: center;
+}
+
+#app {
+    background-color: rgba(0, 238, 255, 0.548);
+    width: 70%;
+    text-align: left;
+    clear: right;
+    overflow: hidden;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+    height: 20px;
+    width: 85%;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    left: 3px;
+    top: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #999;
+}
+
+.important {
+    color: red;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.italic:hover {
+    font-style: italic;
+    color: rgb(255, 0, 0);
+}
+
+button {
+    margin: 0px 25px;
+}
+
+.hidetxt {
+    display: block!important;
+    opacity: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.hidetxt:hover {
+    opacity: 1;
+    text-overflow: unset;
+    overflow: unset;
+    white-space: unset;
+}
