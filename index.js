@@ -4,6 +4,12 @@ import bodyParser from 'body-parser';
 import CryptoJS from "crypto-js";
 import proxy from "http-proxy-middleware";
 import fs from "fs";
+import nedb from "nedb";
+
+const db = new nedb({
+    filename: './data/errors.db',
+    autoload: true
+});
 
 class tool {
     static getcookie(cookie, name) {
@@ -44,6 +50,15 @@ class tool {
         });
         return encrypted.toString();
     };
+    static error(account, err, desc) {
+        db.insert({
+            ts: tool.time(),
+            account: account,
+            desc: desc || "",
+            err: err
+        });
+        return err
+    };
 };
 class Main {
     csrf = "365a9bc7c77897e40b0c7ecdb87806d9";
@@ -53,7 +68,6 @@ class Main {
         "AppVersion": "5.0.3",
         "Content-Type": "application/x-www-form-urlencoded"
     };
-    info = {};
     constructor(data) {
         this.account = data.account;
         this.passwd = data.passwd;
@@ -73,46 +87,54 @@ class Main {
             }]
         }
     };
-    async auth() {
+    async auth() { //登录
         let [res1, cookie1] = await fetch("https://www.yiban.cn/login/doLoginAjax", {
             method: "POST",
             headers: this.header,
             body: `account=${this.account}&password=${this.passwd}`
         }).then(async res => [await res.json(), res.headers.get('set-cookie')]).catch(err => {
-            throw err;
+            throw tool.error(this.account, err);
         });
-        if (res1.code != 200) return [false, res1.message];
-        let verify_request = await fetch("https://f.yiban.cn/iframe/index?act=iapp7463", {
+        if (res1.code != 200) {
+            tool.error(this.account, res1.message, "login");
+            return [false, res1.message];
+        };
+
+        let verify_request_header = await fetch("https://f.yiban.cn/iframe/index?act=iapp7463", {
             redirect: "manual",
             headers: Object.assign({
                 cookie: `yiban_user_token=${tool.getcookie(cookie1, "yiban_user_token")}`
             }, this.header),
-        }).then(res => {
-            return tool.getQueryVariable(res.headers.get("location"), "verify_request");
-        }).catch(err => {
-            throw err;
+        }).then(res => res.headers).catch(err => {
+            throw tool.error(this.account, err);
         });
-        if (!verify_request) return [false, "登录步骤2失败"];
+        let verify_request = tool.getQueryVariable(verify_request_header.get("location"), "verify_request");
+        if (!verify_request) {
+            tool.error(this.account, verify_request_header, "login");
+            return [false, "登录步骤2失败"];
+        };
+
         let cookie2 = await fetch(`https://api.uyiban.com/base/c/auth/yiban?verifyRequest=${verify_request}&CSRF=${this.csrf}`, {
             headers: Object.assign({
                 cookie: `csrf_token=${this.csrf}`
             }, this.header)
         }).then(res => res.headers.get('set-cookie')).catch(err => {
-            throw err;
+            throw tool.error(this.account, err);
         });
         if (tool.getcookie(cookie2, "cpi")) return [true, cookie2];
+        tool.error(this.account, "未授权‘易班校本化’", "login");
         return [false, "请打开以下链接，并授权“易班校本化”后重试：https://oauth.yiban.cn/code/html?client_id=95626fa3080300ea&redirect_uri=https://f.yiban.cn/iapp7463"];
     };
-    async get_task_id() {
+    async get_task_id() { //获取未完成任务中的第一个任务
         return await fetch(`https://api.uyiban.com/officeTask/client/index/uncompletedList?CSRF=${this.csrf}`, {
             headers: this.header
         }).then(res => res.json()).then(json => {
             if (json.code != 0) return [false, json.msg];
-            if (json.data.length == 0)[false, "没有检测到任务！"];
+            if (json.data.length == 0) return [false, "没有检测到任务！"];
             return [true, json.data[0].TaskId];
         });
     };
-    async check_task(task_id) {
+    async check_task(task_id) { //获取任务具体内容
         let res = await fetch(`https://api.uyiban.com/officeTask/client/index/detail?TaskId=${task_id}&CSRF=${this.csrf}`, {
             headers: this.header
         }).then(res => res.json());
@@ -120,17 +142,17 @@ class Main {
         if (res.data.IsLost) return [false, "表单数据丢失"];
         return [true, res.data];
     };
-    async getformcontext(wfid) {
+    async getformcontext(wfid) { //从id获取具体表单
         return await fetch(`https://api.uyiban.com/workFlow/c/my/form/${wfid}?CSRF=${this.csrf}`, {
             headers: this.header
         }).then(res => res.json());
     };
-    async share(share_id) {
+    async share(share_id) { //获取分享链接
         return await fetch(`https://api.uyiban.com/workFlow/c/work/share?InitiateId=${share_id}&Action=view&Key=&CSRF=${this.csrf}`, {
             headers: this.header
         }).then(res => res.json()).then(json => `https://app.uyiban.com/workflow/client/#/share?Key=${json.data.key}`);
     };
-    async submit(task_id, submit_data, task_detail) {
+    async submit(task_id, submit_data, task_detail) { //提交任务
         let extend = this.extend(task_id, task_detail),
             params = {
                 WFId: this.current_wfid,
@@ -146,8 +168,8 @@ class Main {
             body: `Str=${body_encodeuri}`
         }).then(res => res.json());
     };
-    async run() {
-        let [login_ok, login] = await this.auth();
+    async run() { //完整运行
+        let [login_ok, login] = await this.auth(); //登录账号
         if (!login_ok) return {
             ts: tool.time(),
             code: 1,
@@ -157,17 +179,17 @@ class Main {
         this.header = Object.assign({
             cookie: result_cookie
         }, this.header);
-        let [task_id_ok, task_id] = await this.get_task_id();
+        let [task_id_ok, task_id] = await this.get_task_id(); //获取任务id
         if (!task_id_ok) return {
             ts: tool.time(),
             code: 1,
-            msg: "获取任务id时遇到错误：" + task_id
+            msg: "获取任务id时遇到错误：" + tool.error(this.account, task_id, "get_task_id")
         };
-        let [task_check_wfid_ok, task_detail] = await this.check_task(task_id);
+        let [task_check_wfid_ok, task_detail] = await this.check_task(task_id); //获取任务具体内容
         if (!task_check_wfid_ok) return {
             ts: tool.time(),
             code: 1,
-            msg: "检查任务时遇到错误：" + task_detail
+            msg: "检查任务时遇到错误：" + tool.error(this.account, task_detail, "check_task")
         };
         if (task_detail.WFId != this.current_wfid) return {
             ts: tool.time(),
@@ -175,11 +197,11 @@ class Main {
             msg: task_detail.WFId,
             fullmsg: await this.getformcontext(task_detail.WFId)
         };
-        let result = await this.submit(task_id, this.submit_data, task_detail);
+        let result = await this.submit(task_id, this.submit_data, task_detail); //提交任务
         if (result.code != 0) return {
             ts: tool.time(),
             code: 0,
-            msg: "提交表单时出现错误：" + result.msg,
+            msg: "提交表单时出现错误：" + tool.error(this.account, result.msg, "submit"),
             fullmsg: result
         };
         return {
@@ -192,17 +214,17 @@ class Main {
 };
 
 (async () => {
-    let config = await new Promise(async (resolve) => {
+    const config = await new Promise(async (resolve) => {
         let fsp = fs.promises;
         let f = await fsp.open("config.json", "r"),
             data = await f.readFile();
         f.close();
         resolve(JSON.parse(data.toString()));
     });
+    const app = express();
+
     config.port = config.port || 4500;
     if (!config.app_key || !config.app_secret_code) return console.log("需要提供app_key以及app_secret_code，以正常使用地图组件！");
-    let app = express();
-    let errors = [];
     app.use(express.static('public'));
     app.use(bodyParser.urlencoded({
         extended: true
@@ -215,7 +237,7 @@ class Main {
             return path.slice(13) + "&jscode=" + config.app_secret_code;
         }
     }));
-    app.get('/yiban', function (req, res) {
+    app.get('/yiban', async function (req, res) {
         let file = "",
             text = "";
         switch (req.query.r) {
@@ -227,10 +249,6 @@ class Main {
                 res.setHeader("Content-Type", "text/html; charset=utf-8");
                 file = "b-mobile.html";
                 break;
-            case "b-format":
-                res.setHeader("Content-Type", "text/html; charset=utf-8");
-                file = "b-format.html";
-                break;
             case "Amap":
                 res.setHeader("Content-Type", "text/plain; charset=utf-8");
                 text = config.app_key;
@@ -241,7 +259,12 @@ class Main {
                 break;
             case "errors":
                 res.setHeader("Content-Type", "application/json");
-                text = JSON.stringify(errors);
+                text = await new Promise((resolve) => {
+                    db.find({}, (err, res) => {
+                        for (let i of res) delete i._id;
+                        resolve(JSON.stringify(res));
+                    });
+                });
                 break;
             case "bl":
                 res.setHeader("Content-Type", "application/json");
@@ -261,9 +284,9 @@ class Main {
         switch (req.query.r) {
             case "e":
                 res.setHeader("Content-Type", "application/json");
-                let main = new Main(req.body);
+                const main = new Main(req.body);
                 body = await main.run().catch(err => {
-                    errors.push(err.toString());
+                    tool.error(main.account, err, "responding")
                     return {
                         ts: tool.time(),
                         code: 0,
