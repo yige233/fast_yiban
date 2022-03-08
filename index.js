@@ -261,7 +261,10 @@ class Main {
                 res.setHeader("Content-Type", "application/json");
                 text = await new Promise((resolve) => {
                     db.find({}, (err, res) => {
-                        for (let i of res) delete i._id;
+                        for (let i of res) {
+                            delete i._id;
+                            i.account = i.account.toString().substr(0, 3) + "****" + i.account.toString().substr(7);
+                        };
                         resolve(JSON.stringify(res));
                     });
                 });
