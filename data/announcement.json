@@ -1,6 +1,6 @@
 [
   "<span class=\"important \">可以用'important'类来使用红色字体；'hidetext'类来使用隐藏信息，鼠标悬浮可见。</span>",
-  "使用说明：<span class=\"important\">食用方法：请先确保今天还没有打卡。</span>在右边的框内填入账号密码，然后点击确定。此时会返回当次打卡需要填写的表单。<span class=\"important\">确定表单全部填写正确后，再次点击确定。</span>如果当次打卡成功，<span class=\"important\">请收藏当前的网址</span>。之后需要打卡时，打开收藏的网址，正常情况下稍等片刻即可自动打卡。",
+  "使用说明：<span class=\"important\">请先确保今天还没有打卡。</span>在右边的框内填入账号密码，然后点击确定。此时会返回当次打卡需要填写的表单。<span class=\"important\">确定表单全部填写正确后，再次点击确定。</span>如果当次打卡成功，<span class=\"important\">请收藏当前的网址</span>。之后需要打卡时，打开收藏的网址，正常情况下稍等片刻即可自动打卡。",
   "<span class=\"important\">如果你今天已经打了卡</span>，那么可能会获取到错误的表单。如果这个表单在服务器的黑名单内就不会显示其内容。黑名单指的是一组表单id，在某些特定情况下，该id的表单不会被显示在易班app里，但是仍然会被程序检测到。",
   "<div class=\"hidetxt\">隐藏信息</div>",
   "<span class=\"important\">已经接入地图选点组件，不需要手动填写定位坐标。</span>",
