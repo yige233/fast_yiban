@@ -8,6 +8,8 @@
 4. 修改config.json：根据[conf.json](https://github.com/yige233/fast_yiban#configjson)一节的指导，获取`app_key`和`app_secret_key`（即安全密钥），并填入config.json中。
 5. 在步骤3的黑色窗口中输入`node index`，并回车。
 
+其他系统下的操作方法类似。
+
 ## 如何打卡？
 打开[http://localhost:4500](http://localhost:4500)，填入易班账号密码，然后点击确定。此时会返回当次打卡需要填写的表单。确定表单全部填写正确后，再次点击确定。如果当次打卡成功，请收藏当前的网址。之后需要打卡时，打开收藏的网址，正常情况下稍等片刻即可自动打卡。
 
