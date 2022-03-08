@@ -1,11 +1,12 @@
 # 快速易班校本化打卡
 
 自疫情以来，易班打卡成了每天例行的繁琐任务。辅导员天天在年级群里催打卡。早些时候研究的是某高校大佬用python写的代码，还很荣幸地贡献了v3版登录api（虽然现在已经废弃了）。后来大佬的代码停止维护了，v3地址也失效了，所以在研究出新的登录api后，用php重写了一遍，当时的思路就已经转换到使用web服务器来为多人提供打卡服务上了。后来觉得php上也不方便，又用nodejs写了一遍，到现在修修改改，已经跑了一年多了。再有一年多可能我也用不着了，所以把它开源了。
-## 食用方法：
-* 安装最新的nodejs。
-* npm install
-* 修改config.json
-* node index
+## 食用方法（针对Windows）：
+1. 安装最新的nodejs。打开[http://nodejs.cn/download/](http://nodejs.cn/download/)，点击“Windows 安装包”，下载完毕后运行安装包以安装nodejs。
+2.下载源码zip压缩包，解压，打开解压后含有代码的文件夹，按住Shift不放并右键文件夹空白处，在出现的菜单中选择“在此处打开命令窗口”或者“在此处打开powershell窗口”。
+3. 在出现的黑色窗口中输入`npm install`，并回车。
+4. 修改config.json：根据[conf.json](https://github.com/yige233/fast_yiban#configjson)一节的指导，获取`app_key`和`app_secret_key`（即安全密钥），并填入config.json中。
+5. 在步骤3的黑色窗口中输入`node index`，并回车。
 
 ## 如何打卡？
 打开[http://localhost:4500](http://localhost:4500)，填入易班账号密码，然后点击确定。此时会返回当次打卡需要填写的表单。确定表单全部填写正确后，再次点击确定。如果当次打卡成功，请收藏当前的网址。之后需要打卡时，打开收藏的网址，正常情况下稍等片刻即可自动打卡。
@@ -15,11 +16,11 @@
 本着尽量少打扰的原则，没有诸如“向指定邮箱发送打卡结果”的功能。不过打卡成功后会返回分享链接，有截图需求的可以留意该链接。
 
 ## config.json
-* port:程序运行在哪个端口，默认4500
+* `port`:程序运行在哪个端口，默认4500
 * 
-* app_key:用于加载高德地图定位组件，以实现简单方便的自定义打卡定位功能。获取方法见https://lbs.amap.com/api/javascript-api/guide/abc/prepare
+* `app_key`:用于加载高德地图定位组件，以实现简单方便的自定义打卡定位功能。获取方法见https://lbs.amap.com/api/javascript-api/guide/abc/prepare
 * 
-* app_secret_key:同上
+* `app_secret_key`:同上
 
 ## /data/announcement.json
 用于实现简单的公告系统。
