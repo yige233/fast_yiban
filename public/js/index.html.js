@@ -40,14 +40,15 @@ class tool {
     };
 }
 class Submit {
+    maindata = {
+        wfid: 0,
+        account: "",
+        passwd: "",
+        submit: {},
+        extra: {}
+    };
+    submit = {};
     constructor(Amap_key) {
-        this.maindata = {
-            wfid: 0,
-            account: "",
-            passwd: "",
-            submit: {}
-        };
-        this.submit = {};
         tool.loadjs("https://webapi.amap.com/loader.js", async () => {
             this.AMap = await AMapLoader.load({
                 key: Amap_key,
@@ -94,8 +95,7 @@ class Submit {
                     container.setAttribute("data", JSON.stringify({
                         longitude: e.lnglat.getLng(),
                         latitude: e.lnglat.getLat(),
-                        address: result.regeocode.formattedAddress,
-                        time: "{{time}}",
+                        address: result.regeocode.formattedAddress
                     }));
                     container.setAttribute("positioned", true);
                     container.previousElementSibling.previousElementSibling.innerHTML = "获取定位：" + result.regeocode.formattedAddress;
@@ -160,6 +160,27 @@ class Submit {
             };
             return el;
         };
+        const Imageurl = (el) => {
+            function urlgroup() {
+                let div = document.createElement("div");
+                let url = document.createElement("input");
+                url.type = "text";
+                url.placeholder = "填入需要上传的图片链接";
+                let name = document.createElement("input");
+                name.type = "text";
+                name.placeholder = "填入该图片的文件名";
+                div.append(url);
+                div.append(name);
+                return div;
+            };
+            el.setAttribute("blocktype", "image");
+            el.append(urlgroup());
+            let more = document.createElement("button");
+            more.innerText = "添加图片";
+            more.onclick = () => more.before(urlgroup());
+            el.append(more);
+            return el;
+        };
         var ul = document.querySelector("ul"),
             json_ = res.data,
             wfid = json_.Id;
@@ -193,6 +214,9 @@ class Submit {
                 case "Checkbox":
                     el = Checkbox(el, id, props);
                     break;
+                case "Image":
+                    el = Imageurl(el, id, props);
+                    break;
                 default:
                     console.log("未知或不支持自动化打卡的表单项目：", form.component);
                     break;
@@ -211,6 +235,7 @@ class Submit {
             case "autoposition":
                 if (!el.querySelector("#pos_select").getAttribute("positioned")) break;
                 data = JSON.parse(el.querySelector("#pos_select").getAttribute("data"));
+                this.maindata.extra[id] = "TimeStamp";
                 break;
             case "position":
                 data = [];
@@ -239,6 +264,15 @@ class Submit {
                     };
                 };
                 data = data.filter((item) => item);
+                break;
+            case "image":
+                data = [];
+                var groups = el.querySelectorAll("div");
+                for (let group of groups) data.push({
+                    url: group.querySelectorAll("input")[0].value,
+                    name: group.querySelectorAll("input")[1].value,
+                });
+                this.maindata.extra[id] = "ImageUpload";
                 break;
             default:
                 break;
@@ -305,9 +339,7 @@ class Submit {
             tool.showinfo([
                 ["text", "处理数据时出现问题，5分钟后重试。"]
             ]);
-            setTimeout(() => {
-                location.reload()
-            }, 300000);
+            setTimeout(() => location.reload, 300000);
             console.error(err);
         };
     };
@@ -328,7 +360,7 @@ const app = {
             document.head.append(new DOMParser().parseFromString('<link rel="stylesheet" href="/css/mobile.css" type="text/css">', 'text/html').head.children[0])
             document.head.append(new DOMParser().parseFromString('<meta http-equiv="X-UA-Compatible" content="IE=edge">', 'text/html').head.children[0])
             document.head.append(new DOMParser().parseFromString('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">', 'text/html').head.children[0])
-            burl = "b-mobile"; //移动端总算可以看了（才怪
+            burl = "b-mobile"; //移动端总算可以看了
         } else {
             document.head.append(new DOMParser().parseFromString('<link rel="stylesheet" href="/css/main.css" type="text/css">', 'text/html').head.children[0])
         };
@@ -391,13 +423,13 @@ const app = {
         ]);
         this.submit.addaccount(document.querySelector("#account").value, document.querySelector("#passwd").value);
         if (lis.length > 1) {
-            for (let li of lis) {
-                this.submit.buildjson(li.id);
-            };
+            for (let li of lis) this.submit.buildjson(li.id);
             document.querySelector("#sign_data").value = tool.b64en(JSON.stringify(this.submit.fulljson));
         } else if (document.querySelector("#sign_data").value) {
-            this.submit.submit = JSON.parse(JSON.parse(tool.b64de(decodeURIComponent(document.querySelector("#sign_data").value))).submit);
+            let post = JSON.parse(tool.b64de(decodeURIComponent(document.querySelector("#sign_data").value)));
+            this.submit.submit = JSON.parse(post.submit);
+            this.submit.maindata.extra = post.extra;
         };
-        await this.submit.postdata("/yiban?r=e");
+        this.submit.postdata("/yiban?r=e");
     }
 };
