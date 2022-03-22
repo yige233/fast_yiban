@@ -51,6 +51,7 @@ class tool {
         return encrypted.toString();
     };
     static error(account, err, desc) {
+        account = account.toString().substr(0, 3) + "****" + account.toString().substr(7);
         db.insert({
             ts: tool.time(),
             account: account,
@@ -58,6 +59,15 @@ class tool {
             err: err
         });
         return err
+    };
+    static template(str, data) {
+        if (!str) return false;
+        for (let i in data) {
+            if (typeof (data[i]) == "function") continue;
+            let reg = new RegExp(`{{\\s*\\$${i}\\s*}}`, "g");
+            str = str.replace(reg, data[i]);
+        };
+        return str;
     };
 };
 class Main {
@@ -71,8 +81,9 @@ class Main {
     constructor(data) {
         this.account = data.account;
         this.passwd = data.passwd;
-        this.submit_data = JSON.parse(data.submit.replace("{{time}}", tool.time()));
+        this.submit_data = JSON.parse(data.submit);
         this.current_wfid = data.wfid;
+        this.extra = data.extra;
     };
     extend(task_id, task_detail) {
         return {
@@ -168,6 +179,30 @@ class Main {
             body: `Str=${body_encodeuri}`
         }).then(res => res.json());
     };
+    async uploadimg(url, name) {
+        let imgtoupload = await fetch(url).then(res => res.blob());
+        let uploadurl = await fetch(`https://api.uyiban.com/workFlow/c/my/getUploadUrl?name=${name}&type=${encodeURIComponent(imgtoupload.type)}&size=${imgtoupload.size}&CSRF=${this.csrf}`, {
+            headers: this.header
+        }).then(res => res.json());
+        if (uploadurl.code != 0) return [false, uploadurl.message];
+        let uploadres = await fetch(uploadurl.data.signedUrl, {
+            headers: {
+                "content-type": imgtoupload.type,
+                "content-length": imgtoupload.size
+            },
+            method: "put",
+            body: imgtoupload
+        }).then(res => res.ok);
+        if (!uploadres) return [false, "上传图片失败"];
+        return [true, {
+            name: name,
+            size: imgtoupload.size,
+            status: "done",
+            percent: 100,
+            fileName: uploadurl.data.fileName,
+            path: uploadurl.data.fileName
+        }];
+    };
     async run() { //完整运行
         let [login_ok, login] = await this.auth(); //登录账号
         if (!login_ok) return {
@@ -176,9 +211,9 @@ class Main {
             msg: "登录时遇到错误：" + login
         };
         let result_cookie = `csrf_token=${this.csrf}; PHPSESSID=${tool.getcookie(login, "PHPSESSID")}; cpi=${tool.getcookie(login, "cpi")}`;
-        this.header = Object.assign({
+        Object.assign(this.header, {
             cookie: result_cookie
-        }, this.header);
+        });
         let [task_id_ok, task_id] = await this.get_task_id(); //获取任务id
         if (!task_id_ok) return {
             ts: tool.time(),
@@ -196,6 +231,28 @@ class Main {
             code: 2,
             msg: task_detail.WFId,
             fullmsg: await this.getformcontext(task_detail.WFId)
+        };
+        for (let key in this.extra) {
+            switch (this.extra[key]) {
+                case "TimeStamp":
+                    this.submit_data[key].time = tool.time();
+                    break;
+                case "ImageUpload":
+                    let data = [...this.submit_data[key]];
+                    this.submit_data[key] = [];
+                    for (let i of data) {
+                        let [upload_ok, upload_data] = await this.uploadimg(i.url, i.name);
+                        if (!upload_ok) return {
+                            ts: tool.time(),
+                            code: 1,
+                            msg: "上传图片时出现错误：" + tool.error(this.account, upload_data, "uploadimg")
+                        };
+                        this.submit_data[key].push(upload_data);
+                    };
+                    break;
+                default:
+                    break;
+            };
         };
         let result = await this.submit(task_id, this.submit_data, task_detail); //提交任务
         if (result.code != 0) return {
@@ -222,8 +279,8 @@ class Main {
         resolve(JSON.parse(data.toString()));
     });
     const app = express();
-
     config.port = config.port || 4500;
+
     if (!config.app_key || !config.app_secret_code) return console.log("需要提供app_key以及app_secret_code，以正常使用地图组件！");
     app.use(express.static('public'));
     app.use(bodyParser.urlencoded({
@@ -233,9 +290,7 @@ class Main {
     app.use(proxy.createProxyMiddleware('/_AMapService', {
         target: "https://restapi.amap.com/",
         changeOrigin: true,
-        pathRewrite: (path) => {
-            return path.slice(13) + "&jscode=" + config.app_secret_code;
-        }
+        pathRewrite: (path) => path.slice(13) + "&jscode=" + config.app_secret_code
     }));
     app.get('/yiban', async function (req, res) {
         let file = "",
@@ -260,11 +315,9 @@ class Main {
             case "errors":
                 res.setHeader("Content-Type", "application/json");
                 text = await new Promise((resolve) => {
-                    db.find({}, (err, res) => {
-                        for (let i of res) {
-                            delete i._id;
-                            i.account = i.account.toString().substr(0, 3) + "****" + i.account.toString().substr(7);
-                        };
+                    db.find({}, {
+                        _id: 0
+                    }, (err, res) => {
                         resolve(JSON.stringify(res));
                     });
                 });
@@ -307,6 +360,5 @@ class Main {
         };
         res.status(404).end();
     });
-    app.listen(config.port);
-    console.log(`易班自动打卡已运行于 ${config.port} 端口...`);
+    app.listen(config.port, () => console.log(`易班自动打卡已运行于 ${config.port} 端口...`));
 })();
