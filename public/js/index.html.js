@@ -92,9 +92,14 @@ class Submit {
                     });
                     map.add(marker);
                     the_marker = marker;
-                    container.setAttribute("data", JSON.stringify({
+                    if (container.getAttribute("prop" == "AutoTakePosition")) container.setAttribute("data", JSON.stringify({
                         longitude: e.lnglat.getLng(),
-                        latitude: e.lnglat.getLat(),
+                        latitude: e.lnglat.getLat() + "," + e.lnglat.getLat(),
+                        address: result.regeocode.formattedAddress
+                    }));
+                    if (container.getAttribute("prop" == "GdMap")) container.setAttribute("data", JSON.stringify({
+                        location: e.lnglat.getLng(),
+                        name: result.regeocode.formattedAddress,
                         address: result.regeocode.formattedAddress
                     }));
                     container.setAttribute("positioned", true);
@@ -103,10 +108,11 @@ class Submit {
             });
             container.setAttribute("used", true);
         };
-        const AutoTakePosition = (el) => {
+        const TakePosition = (el, type) => {
             el.setAttribute("blocktype", "autoposition");
             let container = document.createElement("div");
             container.id = "pos_select";
+            container.setAttribute("prop", type);
             container.style = "width: 90%;height: 400px;";
             el.append(container);
             return el;
@@ -181,6 +187,13 @@ class Submit {
             el.append(more);
             return el;
         };
+        const getDate = (el) => {
+            el.setAttribute("blocktype", "date");
+            let input = document.createElement("input");
+            input.type = "date";
+            el.append(input);
+            return el;
+        };
         var ul = document.querySelector("ul"),
             json_ = res.data,
             wfid = json_.Id;
@@ -188,18 +201,20 @@ class Submit {
         document.querySelector("#formname").textContent = json_.WFName;
         for (let form of json_.Form) {
             let props = form.props;
-            if (!props.required) continue;
             let id = form.id,
                 el = document.createElement("li"),
                 desc = document.createElement("span"),
                 br = document.createElement("br");
             el.id = id;
-            desc.textContent = ((props.extra)) ? props.label + "，" + props.extra : props.label;
+            desc.textContent = `${props.required?"必须项：":""}${props.extra ?props.extra+"，":""}${props.label}`;
             el.append(desc);
             el.append(br);
             switch (form.component) {
                 case "AutoTakePosition":
-                    el = AutoTakePosition(el);
+                    el = TakePosition(el, "AutoTakePosition");
+                    break;
+                case "GdMap":
+                    el = TakePosition(el, "GdMap");
                     break;
                 case "AreaSelect":
                     el = AreaSelect(el);
@@ -216,6 +231,12 @@ class Submit {
                     break;
                 case "Image":
                     el = Imageurl(el, id, props);
+                    break;
+                case "Date":
+                    el = getDate(el);
+                    break;
+                case "Text":
+                    desc.textContent = `说明：${props.text}`;
                     break;
                 default:
                     console.log("未知或不支持自动化打卡的表单项目：", form.component);
@@ -273,6 +294,9 @@ class Submit {
                     name: group.querySelectorAll("input")[1].value,
                 });
                 this.maindata.extra[id] = "ImageUpload";
+                break;
+            case "date":
+                data = el.querySelectorAll("input")[0].value;
                 break;
             default:
                 break;
