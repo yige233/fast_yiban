@@ -92,12 +92,12 @@ class Submit {
                     });
                     map.add(marker);
                     the_marker = marker;
-                    if (container.getAttribute("prop" == "AutoTakePosition")) container.setAttribute("data", JSON.stringify({
+                    if (container.getAttribute("prop") == "AutoTakePosition") container.setAttribute("data", JSON.stringify({
                         longitude: e.lnglat.getLng(),
                         latitude: e.lnglat.getLat() + "," + e.lnglat.getLat(),
                         address: result.regeocode.formattedAddress
                     }));
-                    if (container.getAttribute("prop" == "GdMap")) container.setAttribute("data", JSON.stringify({
+                    if (container.getAttribute("prop") == "GdMap") container.setAttribute("data", JSON.stringify({
                         location: e.lnglat.getLng(),
                         name: result.regeocode.formattedAddress,
                         address: result.regeocode.formattedAddress
