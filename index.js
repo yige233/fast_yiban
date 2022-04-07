@@ -136,13 +136,16 @@ class Main {
         tool.error(this.account, "未授权‘易班校本化’", "login");
         return [false, "请打开以下链接，并授权“易班校本化”后重试：https://oauth.yiban.cn/code/html?client_id=95626fa3080300ea&redirect_uri=https://f.yiban.cn/iapp7463"];
     };
-    async get_task_id() { //获取未完成任务中的第一个任务
+    async get_task_id() { //获取未完成任务中的第一个任务，忽略未到开始时间的任务
         return await fetch(`https://api.uyiban.com/officeTask/client/index/uncompletedList?CSRF=${this.csrf}`, {
             headers: this.header
         }).then(res => res.json()).then(json => {
             if (json.code != 0) return [false, json.msg];
             if (json.data.length == 0) return [false, "没有检测到任务！"];
-            return [true, json.data[0].TaskId];
+            for (let task of json.data) {
+                if (task.StartTime <= (new Date() / 1e3)) return [true, task.TaskId]
+            };
+            return [false, "没有可以立即提交的任务！"];
         });
     };
     async check_task(task_id) { //获取任务具体内容
@@ -179,7 +182,7 @@ class Main {
             body: `Str=${body_encodeuri}`
         }).then(res => res.json());
     };
-    async uploadimg(url, name) {
+    async uploadimg(url, name) { //上传图片
         let imgtoupload = await fetch(url).then(res => res.blob());
         let uploadurl = await fetch(`https://api.uyiban.com/workFlow/c/my/getUploadUrl?name=${name}&type=${encodeURIComponent(imgtoupload.type)}&size=${imgtoupload.size}&CSRF=${this.csrf}`, {
             headers: this.header
