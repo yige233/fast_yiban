@@ -194,6 +194,12 @@ class Submit {
             el.append(input);
             return el;
         };
+        const unkonwnComponent=(el,component)=>{
+            let div=document.createElement("div");
+            div.innerText=`未知或不支持自动化打卡的表单项目：${component}`;
+            el.append(div);
+            return el;
+        };
         var ul = document.querySelector("ul"),
             json_ = res.data,
             wfid = json_.Id;
@@ -239,6 +245,7 @@ class Submit {
                     desc.textContent = `说明：${props.text}`;
                     break;
                 default:
+                    el = unkonwnComponent(el,form.component);
                     console.log("未知或不支持自动化打卡的表单项目：", form.component);
                     break;
             }
