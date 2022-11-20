@@ -1,6 +1,0 @@
-{
-  "port": 4500,
-  "app_key": "",
-  "app_secret_code": "",
-  "说明": "port是程序运行的端口；app_key和app_secret_code用于加载地图选点组件，获取方法见https://lbs.amap.com/api/javascript-api/guide/abc/prepare，Key=>app_key，安全密钥=>app_secret_code"
-}
