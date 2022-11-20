@@ -1,106 +1,87 @@
-body {
-    min-width: 600px;
-    width: 95%;
-    height: 90%;
-}
-
 .container {
-    position: relative;
-    width: 96%;
-    left: 4%;
+    background-color: rgba(142, 142, 142, 0.252);
+    border-radius: 10px;
+    padding: 10px;
+    user-select: none;
+    width: 100%;
+    min-height: 500px;
 }
 
-.description {
-    float: left;
-    clear: left;
-    position: sticky;
-    background-color: white;
-    width: 30%;
-    word-wrap: break-word;
-    top: 10px;
-    bottom: 24px;
-    z-index: 999;
+.tabHeader {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    justify-items: center;
+    height: 50px;
+    width: 100%;
 }
 
-#desc {
-    position: relative;
-    width: 90%;
-    float: left;
-    text-indent: 1em;
-}
-
-.dynamic-info {
-    position: relative;
-    width: 90%;
-    float: left;
-    top: 10px
-}
-
-#result {
-    position: relative;
-    width: 90%;
-    float: left;
-    top: 20px
-}
-
-h3,
-#formname {
+.tabHeader>div {
+    width: 25%;
     text-align: center;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    transition: .2s ease;
 }
 
-#app {
-    background-color: rgba(0, 238, 255, 0.548);
-    width: 70%;
-    text-align: left;
-    clear: right;
-    overflow: hidden;
+.tabHeader>div.show {
+    background-color: rgba(49, 158, 230, 0.5);
 }
 
-input[type="text"],
-input[type="password"],
-input[type="number"] {
-    height: 20px;
-    width: 85%;
+.tabBody {
+    display: grid;
+    justify-content: center;
+    display: grid;
+    justify-content: center;
 }
 
-input[type="radio"],
-input[type="checkbox"] {
-    left: 3px;
-    top: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 1px solid #999;
+#logs,
+.tabBody,
+#form>div:first-child {
+    padding: 10px;
 }
 
-.important {
-    color: red;
+#form>div:first-child {
+    width: 800px;
 }
 
-.italic {
-    font-style: italic;
+#logs>div {
+    padding: 5px;
+    width: 600px;
 }
 
-.italic:hover {
-    font-style: italic;
-    color: rgb(255, 0, 0);
+#logs>div:nth-child(odd) {
+    background-color: rgba(140, 140, 140, 0.5);
 }
 
-button {
-    margin: 0px 25px;
+#logs>div:nth-child(even) {
+    background-color: rgba(103, 103, 103, 0.5);
 }
 
-.hidetxt {
-    display: block!important;
-    opacity: 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+#logs>div:first-child {
+    border-radius: 10px 10px 0 0;
 }
 
-.hidetxt:hover {
-    opacity: 1;
-    text-overflow: unset;
-    overflow: unset;
-    white-space: unset;
+#logs>div:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+#form>div:last-child {
+    display: grid;
+    grid-template-rows: 1fr;
+    row-gap: 10px;
+    justify-content: center;
+}
+
+#info .important {
+    color: rgb(233, 33, 33);
+}
+
+#info {
+    text-indent: 2em;
+}
+
+#login button {
+    width: 100%;
 }

@@ -1,0 +1,16 @@
+yiban-takeposition,
+:host {
+    display: flex;
+    width: 100%;
+    background-color: #9494946d;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.content>label {
+    transition: .2s ease;
+}
+
+.content>label:hover {
+    background-color: rgba(175, 175, 175, 0.427);
+}

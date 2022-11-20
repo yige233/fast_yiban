@@ -4,23 +4,131 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="./css/simple.min.css">
+    <link rel="stylesheet" href="./css/main.css">
+    <title>易班快速打卡</title>
 </head>
 
 <body>
-    <h1 style="text-align: center;">加载中...</h1>
+    <h3 style="text-align: center;">易班快速打卡工具</h3>
+    <div class="tabContainer">
+        <div class="tabHeader">
+            <div>公告信息</div>
+            <div class="show">登录易班</div>
+            <div>打卡表单</div>
+            <div>程序日志</div>
+        </div>
+        <div class="tabBody">
+            <div id="info" style="display: none;"></div>
+            <div id="login">
+                <div><span>账号：</span><input type="number" /></div>
+                <div><span>密码：</span><input type="password" /></div>
+                <button>登录</button>
+            </div>
+            <div id="form" style="display: none;">
+                <div>打卡表单：Noting</div>
+                <div></div>
+            </div>
+            <div id="logs" style="display: none;">
+                <h2 style="text-align: center;">Nothing</h2>
+            </div>
+        </div>
+    </div>
+    <template class="yibanAreaSelect">
+        <link rel="stylesheet" href="./css/simple.min.css">
+        <link rel="stylesheet" href="./css/component.css">
+        <style>
+            .content>input {
+                width: 600px;
+            }
+        </style>
+        <div>
+            <div class="desc"></div>
+            <div class="content">
+                <input placeholder="请填写省份名" type="text" /><br />
+                <input placeholder="请填写城市名" type="text" /><br />
+                <input placeholder="请填写区县名" type="text" /><br />
+            </div>
+        </div>
+    </template>
+    <template class="yibanSelector yibanText yibanFile">
+        <link rel="stylesheet" href="./css/simple.min.css">
+        <link rel="stylesheet" href="./css/component.css">
+        <div>
+            <div class="desc"></div>
+            <div class="content"> </div>
+        </div>
+    </template>
+    <template class="yibanSingleFile">
+
+        <style>
+            div .selector {
+                width: 600px;
+                display: grid;
+                align-items: center;
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            div .file input {
+                width: 600px;
+            }
+
+            button {
+                width: 600px;
+            }
+        </style>
+        <div class="selector">
+            <span>选择文件：</span>
+            <select>
+                <option value="direct" selected>直接上传</option>
+                <option value="url">从url上传</option>
+            </select>
+            <select>
+                <option value="false" selected>仅应用于本次打卡</option>
+                <option value="true">可应用于自动打卡</option>
+            </select>
+        </div>
+        <div class="file">
+            <div> <input type="file" accept="image/*" /> </div>
+            <div style="display: none;">
+                <span>填入文件名称：</span><br />
+                <input type="text" /><br />
+                <span>填入文件URL链接</span><br />
+                <input type="text" />
+            </div>
+        </div>
+    </template>
+    <template class="yibanDate">
+        <link rel="stylesheet" href="./css/simple.min.css">
+        <link rel="stylesheet" href="./css/component.css">
+        <div>
+            <div class="desc"></div>
+            <div class="content">
+                <input type="date" />
+            </div>
+        </div>
+    </template>
+    <template class="yibanTextarea">
+        <link rel="stylesheet" href="./css/simple.min.css">
+        <link rel="stylesheet" href="./css/component.css">
+        <div>
+            <div class="desc"></div>
+            <div class="content">
+                <textarea placeholder="" style="height:200px;width:600px"></textarea>
+            </div>
+        </div>
+    </template>
+    <template class="yibanTakePosition">
+        <link rel="stylesheet" href="./css/component.css">
+        <div>
+            <div class="desc"></div>
+            <div class="content">
+                <div class="address">定位到：</div>
+                <div class="Amap" style="width: 600px;height: 600px;"></div>
+            </div>
+        </div>
+    </template>
 </body>
-<script>
-    (() => {
-        let js = document.createElement("script");
-        js.src = "/js/index.html.js";
-        js.onerror = () => {
-            alert("与服务器的连接似乎出了问题，请刷新或联系管理员！");
-        };
-        js.onload = () => {
-            app.init();
-        };
-        document.head.append(js);
-    })();
-</script>
+<script type="module" src="./js/index.html.js"></script>
 
 </html>
