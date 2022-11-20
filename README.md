@@ -9,7 +9,7 @@
 1. 安装最新的nodejs。打开[http://nodejs.cn/download/](http://nodejs.cn/download/)，点击“Windows 安装包”，下载完毕后运行安装包以安装nodejs。
 2. 下载源码zip压缩包，解压，打开解压后含有代码的文件夹，按住Shift不放并右键文件夹空白处，在出现的菜单中选择“在此处打开命令窗口”或者“在此处打开powershell窗口”。
 3. 在出现的黑色窗口中输入`npm install`，并回车。
-4. 修改config.js：根据[config.js](https://github.com/yige233/fast_yiban#configjson)一节的指导，获取`app_key`和`app_secret_key`（即安全密钥），并填入config.js中。
+4. 修改config.js：根据[config.js](https://github.com/yige233/fast_yiban#configjs)一节的指导，获取`app_key`和`app_secret_key`（即安全密钥），并填入config.js中。
 5. 在步骤3的黑色窗口中输入`node index`，并回车。
 
 其他系统下的操作方法类似。
