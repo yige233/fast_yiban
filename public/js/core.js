@@ -48,7 +48,7 @@ class Client {
             return false;
         };
         this.user = [account, Base64.encode(passwd)];
-        const ws = new WebSocket(((location.protocol == "https:") ? "wss:" : "ws") + "//" + location.hostname);
+        const ws = new WebSocket(((location.protocol == "https:") ? "wss:" : "ws:") + "//" + location.hostname);
         this.ws = ws;
         ws.addEventListener("message", e => {
             const events = new Map([
