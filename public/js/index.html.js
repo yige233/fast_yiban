@@ -24,6 +24,7 @@ class App extends Client {
         try {
             const existedDataRaw = new URL(window.location.href).searchParams.get("data");
             if (existedDataRaw) {
+                document.querySelector("div.tabHeader>div:nth-child(4)").dispatchEvent(new Event("mouseover"));
                 logger.log("开始导入数据，并尝试自动打卡……");
                 const existedData = JSON.parse(Base64.decode(existedDataRaw));
                 this.import(existedData);
@@ -35,6 +36,7 @@ class App extends Client {
         document.querySelector("#login button").addEventListener("click", async e => {
             if (this.active) return;
             const inputs = document.querySelectorAll("#login input");
+            document.querySelector("div.tabHeader>div:nth-child(4)").dispatchEvent(new Event("mouseover"));
             await this.login(inputs[0].value, inputs[1].value);
             if (this.active && await this.fileHandler()) this.submit();
         });
@@ -134,6 +136,7 @@ class App extends Client {
         };
         const submitBtn = dom(`<button>提交表单</button>`);
         submitBtn.addEventListener("click", async e => {
+            document.querySelector("div.tabHeader>div:nth-child(4)").dispatchEvent(new Event("mouseover"));
             await this.fileHandler() && this.submit();
         });
         container.append(submitBtn);
