@@ -7,7 +7,7 @@ const
   app_secret_code = "",
 
   //允许保存的图片的最大大小,单位为B（字节）。下面是10MB。
-  maxImgSize = 1024 * 1024 ^ 10,
+  maxImgSize = 1024 * 1024 * 10,
 
   //可以上传到易班服务器的文件类型-图片
   allowedImage = ["image/png", "image/jpg", "image/jpeg"],
@@ -26,7 +26,6 @@ const
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "text/plain"
   ];
-
 
 export {
   port,
