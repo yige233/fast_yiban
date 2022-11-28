@@ -14,3 +14,13 @@ yiban-takeposition,
 .content>label:hover {
     background-color: rgba(175, 175, 175, 0.427);
 }
+
+yiban-takeposition>div,
+:host>div {
+    width: 100%;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+}

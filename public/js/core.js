@@ -3,7 +3,6 @@ import {
 } from "./tool.js";
 
 const active = Symbol("avtive");
-const auto = Symbol("auto");
 
 class Client {
     events = new Map([
@@ -20,7 +19,9 @@ class Client {
     user = []; //0为用户名，1为密码。姑且用Base64编码，避免一眼就被看光。
     constructor() {
         this[active] = false;
-        this.clean();
+        this.wfid = 0; //工作流id
+        this.rawData = {}; //用于提交的数据
+        this.files = {}; //将要上传到易班的文件列表
     };
     on(event, callback) { //添加事件
         if (!this.events.has(event)) throw new Error("不存在的事件:", event);
@@ -35,12 +36,14 @@ class Client {
         const callbacks = this.events.get(event) || [];
         for (let i of callbacks) i(data);
     };
-    clean() { //清理数据。不会影响登录状态
-        this.wfid = 0;
-        this.submitData = {};
-        this.files = {};
-        this.extra = {};
-        this[auto] = true;
+    waitEvent(event) { //等待事件触发
+        return new Promise((resolve) => {
+            let callback = (res) => {
+                this.remove(event, callback);
+                resolve(res);
+            };
+            this.on(event, callback);
+        });
     };
     async login(account, passwd) { //登录
         if (!account || !passwd) {
@@ -64,7 +67,7 @@ class Client {
             ]);
             const [event, dataRaw] = [events.get(e.data.slice(0, 1)), e.data.slice(1)];
             const data = (event == "heartbeat") ? null : JSON.parse(dataRaw || "{}");
-            this.emit(event, data.data);
+            this.emit(event, data.data || null);
         });
         ws.addEventListener("open", e => {
             this.send("login", {
@@ -80,13 +83,13 @@ class Client {
             this.emit("message", "连接服务器时发生错误。");
             this[active] = false;
         });
-        return await new Promise((resolve) => {
-            this.on("auth", res => {
-                this.emit("message", res.message);
-                this[active] = res.ok;
-                resolve(res.ok);
-            });
-        });
+        const {
+            ok,
+            message
+        } = await this.waitEvent("auth");
+        this.emit("message", message);
+        this[active] = ok;
+        return ok;
     };
     send(type, data) { //发送数据。
         const types = new Map([
@@ -94,7 +97,8 @@ class Client {
             ["login", 1], //登录
             ["submit", 2], //提交表单
             ["checkFile", 3], //检查文件
-            ["test", 4]
+            ["getForm", 4], //获取表单内容
+            ["test", 9]
         ]);
         const typeCode = types.get(type) || "0";
         this.ws.send(`${typeCode}${data ? JSON.stringify(data) : ""}`);
@@ -103,9 +107,12 @@ class Client {
     async fileHandler() {
         for (let id in this.files) {
             const result = [];
+            let manual = false;
             const files = this.files[id] || new Map();
-            for (const file of files.data.values()) {
+            const filesArr = Array.from(files.data.values()).sort((a, b) => (b.type == "signature") ? 1 : -1); //把signature类型排到最前面，优先处理
+            for (const file of filesArr) {
                 const check = {
+                    component: file.type,
                     name: file.data.name,
                     size: 0,
                     type: null,
@@ -123,45 +130,45 @@ class Client {
                 };
                 const uploadRes = await this.upload(check, file.upload);
                 if (!uploadRes) return false; //直接返回false，阻止提交
-                if (file.allowAuto == false) this[auto] = false;
-                if (file.type == "Signature") {
-                    this.data(id, uploadRes.path);
+                file.manual && (manual = file.manual); //如果有一个文件是手动上传，那么整个项目就被判定为需要手动上传
+                if (file.type == "signature") {
+                    this.data(id, uploadRes, file.manual);
                     break;
                 };
                 result.push(uploadRes);
             };
-            this.data(id, result);
+            this.data(id, result, manual);
         };
         return true;
     };
-    submit() { //提交表单
+    submit(wfid = this.wfid, rawData = this.rawData) { //提交表单
         if (!this.active) return false;
-        for (let id in this.extra) {
-            const data = this.extra[id];
-            switch (data.type) {
-                case "time":
-                    this.submitData[id].time = new Date().toLocaleString("chinese", {
+        const submitData = {};
+        for (let id in rawData) {
+            const extra = rawData[id].extra || {};
+            switch (extra.type) {
+                case "time": //目前只有定位用到时间
+                    rawData[id].main.time = new Date().toLocaleString("chinese", {
                         hour12: false
                     });
                     break;
                 default:
                     break;
             };
+            submitData[id] = rawData[id].main;
         };
-        return new Promise((resolve) => {
-            if (!this.active) return resolve(false);
-            this.send("submit", {
-                wfid: this.wfid || 0,
-                submitData: this.submitData || {}
-            });
-            this.on("submitDone", res => resolve(res));
+        this.send("submit", {
+            wfid: wfid || 0,
+            submitData: submitData || {}
         });
+        return this.waitEvent("submitDone");
     };
     async upload(file, type = "direct") { //上传文件
         if (!this.active) return false;
         const checkFile = {
             uploadType: type,
             name: file.name || null,
+            component: file.component
         };
         if (type == "url") {
             checkFile.url = file.url;
@@ -171,9 +178,7 @@ class Client {
             checkFile.type = file.type;
         };
         this.send("checkFile", checkFile);
-        const checkRes = await new Promise((resolve) => {
-            this.on("checkFile", res => resolve(res));
-        });
+        const checkRes = await this.waitEvent("checkFile");
         this.emit("message", checkRes.message);
         if (!checkRes.ok) return false;
         if (type == "direct") {
@@ -185,20 +190,20 @@ class Client {
                 body: file.data
             }).catch(() => false);
         };
-        const uploadRes = await new Promise(resolve => {
-            this.on("uploadFile", res => resolve(res));
-        });
+        const uploadRes = await this.waitEvent("uploadFile");
         this.emit("message", uploadRes.message);
         if (!uploadRes.ok) return false;
         return uploadRes.data;
     };
-    data(id, data) { //添加表单数据
-        this.submitData[id] = data;
+    data(id, data, manual = false) { //添加表单数据
+        if (!this.rawData[id]) this.rawData[id] = {};
+        this.rawData[id].main = data;
+        this.rawData[id].manual = manual;
     };
     dataEx(id, type, data = "") { //添加额外的表单数据。打卡表单的内容可能不会每次都相同，有变化的部分可以通过额外数据记录，自动打卡时，根据该记录实时生成打卡内容。
         switch (type) {
             case "time": //目前只有定位用到时间
-                this.extra[id] = {
+                this.rawData[id].extra = {
                     type: "time"
                 };
                 break;
@@ -213,27 +218,34 @@ class Client {
         const {
             user,
             wfid,
-            submitData,
-            extra,
-            auto
+            rawData
         } = data;
-        if (!auto) { //想象这样的情况：打卡表单需要提供当天的健康码。将该项设置为仅当次打卡生效，就能避免不小心上传到过期的健康码的问题。
-            this.emit("message", "导入的数据不允许自动执行打卡任务。");
-            return;
-        };
-        await this.login(user[0], Base64.decode(user[1]));
+        await this.login(user[0], Base64.decode(user[1])); //先自动登录
+        if (!this.active) return false;
         this.wfid = wfid;
-        this.submitData = submitData;
-        this.extra = extra;
-        if (this.active) this.submit();
+        this.rawData = rawData; //导入rawData
+        for (let id in rawData) { //检查是否有需要手动填写的项目
+            if (rawData[id].manual) {
+                this.emit("message", "导入的数据中存在需要手动填写的项目，请等待程序加载该项目，填写完成后点击“提交表单”");
+                this.send("getForm", {
+                    wfid
+                }) //此时使用导入的wfid获取该工作流的表单
+                return false;
+            };
+        };
+        return await this.submit().then(res => res.ok);
     };
     get export() { //导出数据
+        const rawData = {};
+        for (let id in this.rawData) { //manual为false，就删除manual属性，减小数据大小
+            rawData[id] = this.rawData[id];
+            if (this.rawData[id].manual) rawData[id].main = "";
+            else delete rawData[id].manual;
+        };
         return {
-            auto: this[auto],
             user: [this.user[0] || 0, this.user[1] || 0],
             wfid: this.wfid,
-            submitData: this.submitData,
-            extra: this.extra
+            rawData: rawData,
         };
     };
     get active() { //用户活动状态

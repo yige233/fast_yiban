@@ -34,6 +34,15 @@
             </div>
         </div>
     </div>
+    <template class="yibanHead">
+        <div class="head">
+            <div class="desc"></div>
+            <select class="manual">
+                <option value="false" selected>可应用于自动打卡</option>
+                <option value="true">仅应用于本次打卡</option>
+            </select>
+        </div>
+    </template>
     <template class="yibanAreaSelect">
         <link rel="stylesheet" href="./css/simple.min.css">
         <link rel="stylesheet" href="./css/component.css">
@@ -43,7 +52,6 @@
             }
         </style>
         <div>
-            <div class="desc"></div>
             <div class="content">
                 <input placeholder="请填写省份名" type="text" /><br />
                 <input placeholder="请填写城市名" type="text" /><br />
@@ -55,7 +63,6 @@
         <link rel="stylesheet" href="./css/simple.min.css">
         <link rel="stylesheet" href="./css/component.css">
         <div>
-            <div class="desc"></div>
             <div class="content"> </div>
         </div>
     </template>
@@ -84,12 +91,12 @@
                 <option value="url">从url上传</option>
             </select>
             <select>
-                <option value="false" selected>仅应用于本次打卡</option>
-                <option value="true">可应用于自动打卡</option>
+                <option value="true" selected>仅应用于本次打卡</option>
+                <option value="false">可应用于自动打卡</option>
             </select>
         </div>
         <div class="file">
-            <div> <input type="file" accept="image/*" /> </div>
+            <div> <input type="file" accept="*" /> </div>
             <div style="display: none;">
                 <span>填入文件名称：</span><br />
                 <input type="text" /><br />
@@ -102,7 +109,6 @@
         <link rel="stylesheet" href="./css/simple.min.css">
         <link rel="stylesheet" href="./css/component.css">
         <div>
-            <div class="desc"></div>
             <div class="content">
                 <input type="date" />
             </div>
@@ -112,7 +118,6 @@
         <link rel="stylesheet" href="./css/simple.min.css">
         <link rel="stylesheet" href="./css/component.css">
         <div>
-            <div class="desc"></div>
             <div class="content">
                 <textarea placeholder="" style="height:200px;width:600px"></textarea>
             </div>
@@ -121,10 +126,9 @@
     <template class="yibanTakePosition">
         <link rel="stylesheet" href="./css/component.css">
         <div>
-            <div class="desc"></div>
             <div class="content">
                 <div class="address">定位到：</div>
-                <div class="Amap" style="width: 600px;height: 600px;"></div>
+                <div class="Amap" style="width: 100%;height: 600px;"></div>
             </div>
         </div>
     </template>

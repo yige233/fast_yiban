@@ -7,6 +7,7 @@ import AMap from "./amap.js"
 const rendered = Symbol("rendered");
 
 class yibanElem extends HTMLElement { //自定义元素挺不错的，就是要自己写css很烦
+    data = null;
     constructor(selector, useShadow = true) {
         if (!selector) throw new Error("需要提供模板selector");
         super();
@@ -24,26 +25,36 @@ class yibanElem extends HTMLElement { //自定义元素挺不错的，就是要�
         this.shadow = this.useShadow ? this.attachShadow({
             mode: "closed"
         }) : this;
-        const content = document.querySelector(this.selector).content.cloneNode(true);
-        this.shadow.append(content);
-        await this.render();
+        this.shadow.append(document.querySelector(this.selector).content.cloneNode(true));
+        try {
+            await this.render();
+        } catch (err) {
+            console.error(err);
+        };
         this[rendered] = true;
         this.attributeChangedCallback();
+        this.getElem(".manual").addEventListener("change", () => {
+            this.trigger(this.data);
+        });
     };
     attributeChangedCallback(name, oldValue, newValue) { //当元素的被监视的属性发生变化时，就会调用该方法。
         if (!this[rendered]) return;
+        this.getElem("div").prepend(document.querySelector(".yibanHead").content.cloneNode(true));
         const desc = [];
         if (this.getAttribute("required") != null && this.getAttribute("required") != "false") desc.push("必须项:");
         desc.push(this.getAttribute("desc") || "");
         this.getElem(".desc").innerText = desc.join(" ");
-
         this.attrRender(name, oldValue, newValue);
     };
     async render() {};
     attrRender() {};
     trigger(data) { //触发 yiban-formdata 事件
+        this.data = data;
         this.dispatchEvent(new CustomEvent("yiban-formdata", {
-            detail: data
+            detail: {
+                main: data,
+                manual: (this.getElem(".manual").value == "true") ? true : false
+            },
         }));
     };
     static defineSelf(tagName) {
@@ -192,12 +203,13 @@ class File extends yibanElem {
         const div = document.createElement("div");
         div.append(document.querySelector(".yibanSingleFile").content.cloneNode(true));
         const fileInput = div.querySelector("div.file > div:nth-child(1)");
+        fileInput.querySelector("input").setAttribute("accept", (type == "attachment") ? "*" : "image/*")
         const urlInput = div.querySelector("div.file> div:nth-child(2)");
         div.addEventListener("change", () => {
             const data = {
                 type: type,
                 upload: div.querySelector("select:nth-child(2)").value,
-                allowAuto: (div.querySelector("select:nth-child(3)").value == "true") ? true : false
+                manual: (div.querySelector("select:nth-child(3)").value == "true") ? true : false
             };
             if (data.upload == "url") {
                 fileInput.setAttribute("style", "display:none");
@@ -207,11 +219,9 @@ class File extends yibanElem {
                     name: urlInputElem[0].value || null,
                     url: urlInputElem[1].value || null
                 };
-                fileInput.querySelector("input").setAttribute("accept", "*");
             } else {
                 fileInput.setAttribute("style", "display:block");
                 urlInput.setAttribute("style", "display:none");
-                fileInput.querySelector("input").setAttribute("accept", "image/*");
                 data.data = fileInput.querySelector("input").files[0] || null;
             };
             this.data.set(id, data);

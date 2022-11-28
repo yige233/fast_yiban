@@ -5,7 +5,7 @@ function dom(str) {
 
 class Base64 { //憋出一个Base64编解码的class，我是超级大憨批
     static get key() {
-        return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".split("");
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".split("");
     };
     static encode(data) {
         let code2 = "";
@@ -115,8 +115,8 @@ class Log {
     log(...text) {
         if (this.container.querySelector("h2")) this.container.querySelector("h2").remove();
         this.container.append(dom(`<div>${new Date().toLocaleTimeString()} ${text.join(" ")}</div>`));
-        this.container.scrollTo({
-            top: this.container.scrollHeight,
+        window.scrollTo({
+            top: document.body.scrollHeight,
             left: 0,
             behavior: 'smooth'
         });

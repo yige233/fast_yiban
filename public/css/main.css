@@ -42,10 +42,6 @@
     padding: 10px;
 }
 
-#form>div:first-child {
-    width: 800px;
-}
-
 #logs>div {
     padding: 5px;
     width: 600px;
