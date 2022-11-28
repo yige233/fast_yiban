@@ -26,6 +26,7 @@ class yibanElem extends HTMLElement { //自定义元素挺不错的，就是要�
             mode: "closed"
         }) : this;
         this.shadow.append(document.querySelector(this.selector).content.cloneNode(true));
+        this.getElem("div").prepend(document.querySelector(".yibanHead").content.cloneNode(true));
         try {
             await this.render();
         } catch (err) {
@@ -39,7 +40,6 @@ class yibanElem extends HTMLElement { //自定义元素挺不错的，就是要�
     };
     attributeChangedCallback(name, oldValue, newValue) { //当元素的被监视的属性发生变化时，就会调用该方法。
         if (!this[rendered]) return;
-        this.getElem("div").prepend(document.querySelector(".yibanHead").content.cloneNode(true));
         const desc = [];
         if (this.getAttribute("required") != null && this.getAttribute("required") != "false") desc.push("必须项:");
         desc.push(this.getAttribute("desc") || "");
