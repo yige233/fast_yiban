@@ -111,6 +111,7 @@ class Client {
             const files = this.files[id] || new Map();
             const filesArr = Array.from(files.data.values()).sort((a, b) => (b.type == "signature") ? 1 : -1); //把signature类型排到最前面，优先处理
             for (const file of filesArr) {
+                if (!file.data) continue;
                 const check = {
                     component: file.type,
                     name: file.data.name,
@@ -133,7 +134,7 @@ class Client {
                 file.manual && (manual = file.manual); //如果有一个文件是手动上传，那么整个项目就被判定为需要手动上传
                 if (file.type == "signature") {
                     this.data(id, uploadRes, file.manual);
-                    break;
+                    return true;
                 };
                 result.push(uploadRes);
             };
