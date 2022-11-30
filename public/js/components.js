@@ -192,6 +192,7 @@ class Textarea extends yibanElem {
 
 class File extends yibanElem {
     data = new Map();
+    paste = null;
     constructor() {
         super(".yibanFile");
     };
@@ -203,8 +204,21 @@ class File extends yibanElem {
         const div = document.createElement("div");
         div.append(document.querySelector(".yibanSingleFile").content.cloneNode(true));
         const fileInput = div.querySelector("div.file > div:nth-child(1)");
-        fileInput.querySelector("input").setAttribute("accept", (type == "attachment") ? "*" : "image/*")
+        fileInput.querySelector("input").setAttribute("accept", (type == "attachment") ? "*" : "image/*");
         const urlInput = div.querySelector("div.file> div:nth-child(2)");
+        div.addEventListener('paste', e => {
+            e.preventDefault();
+            const items = e.clipboardData && e.clipboardData.items;
+            for (let i of items) {
+                if (i.type.indexOf('image') !== -1) {
+                    this.paste = i.getAsFile();
+                    fileInput.querySelector("div").innerHTML = "";
+                    fileInput.querySelector("div").append(dom(`<img src=${URL.createObjectURL(this.paste)} />`));
+                    div.dispatchEvent(new Event("change"));
+                    break;
+                };
+            };
+        });
         div.addEventListener("change", () => {
             const data = {
                 type: type,
@@ -222,7 +236,7 @@ class File extends yibanElem {
             } else {
                 fileInput.setAttribute("style", "display:block");
                 urlInput.setAttribute("style", "display:none");
-                data.data = fileInput.querySelector("input").files[0] || null;
+                data.data = fileInput.querySelector("input").files[0] || this.paste || null;
             };
             this.data.set(id, data);
             this.trigger(this.data);

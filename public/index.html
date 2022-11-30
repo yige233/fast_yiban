@@ -69,22 +69,30 @@
     <template class="yibanSingleFile">
 
         <style>
-            div .selector {
-                width: 600px;
+            .selector,
+            .file>div {
                 display: grid;
                 align-items: center;
-                grid-template-columns: 1fr 1fr 1fr;
             }
 
-            div .file input {
-                width: 600px;
+            .file>div {
+                grid-template-columns: 1fr
             }
 
-            button {
-                width: 600px;
+            button,
+            .file div * {
+                width: 100%;
+            }
+
+            .file div>div {
+                color: var(--text);
+                background-color: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 5px;
+                min-height: 40px;
             }
         </style>
-        <div class="selector">
+        <div class="selector" style="grid-template-columns: 1fr 1fr 1fr">
             <span>选择文件：</span>
             <select>
                 <option value="direct" selected>直接上传</option>
@@ -96,12 +104,13 @@
             </select>
         </div>
         <div class="file">
-            <div> <input type="file" accept="*" /> </div>
+            <div>
+                <input type="file" accept="*" />
+                <div contenteditable>点击这里，粘贴图片</div>
+            </div>
             <div style="display: none;">
-                <span>填入文件名称：</span><br />
-                <input type="text" /><br />
-                <span>填入文件URL链接</span><br />
-                <input type="text" />
+                <input type="text" placeholder="填入文件名称：" /><br />
+                <input type="text" placeholder="填入文件URL链接" />
             </div>
         </div>
     </template>
