@@ -11,7 +11,7 @@
 3. 在出现的黑色窗口中输入`npm install`，并回车。
 4. 修改config.js：根据[config.js](https://github.com/yige233/fast_yiban#configjs)一节的指导，获取`app_key`和`app_secret_key`（即安全密钥），并填入config.js中。这一步可以选择跳过，后果是网页将无法正常加载地图模块，也就是说不能用地图选点定位。
 5. 在步骤3的黑色窗口中输入`node index`，并回车。
-6. 浏览器打开http://localhost:4500，如果能够正常出现网页，就说明程序成功跑起来了。
+6. 浏览器打开[http://localhost:4500](http://localhost:4500)，如果能够正常出现网页，就说明程序成功跑起来了。
 
 其他系统下的操作方法类似。
 
