@@ -72,7 +72,9 @@
 ## 关于
 该程序原本是为了闽江学院而定制的，但理论上能够兼容其他学校的“易班校本化”打卡。也就是说如果你们学校不是用“易班校本化”来打卡的，本工具对你来说就毫无用处了。如果在使用本工具中出现了问题，可以试试发个issue。
 
-自己搭建的demo：[https://yiban.doveyige.top](https://yiban.doveyige.top)
+~自己搭建的demo：[https://yiban.doveyige.top](https://yiban.doveyige.top)~
+
+服务器似乎被易班拉黑名单了，没法访问www.yiban.cn，所以demo寄了
 
 前端太丑：没办法，能力有限（）能用就行了，要啥自行车
 
